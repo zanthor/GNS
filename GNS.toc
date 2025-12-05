@@ -1,0 +1,8 @@
+## Interface: 11200
+## Title: GNS - Goblin Naming System
+## Notes: Adds custom naming functionality to the Goblin Brainwashing Device specializations
+## Author: Tankmedady
+## Version: 1.0
+## SavedVariables: GNS_SpecNames
+
+GNS.lua
