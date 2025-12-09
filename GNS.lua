@@ -177,7 +177,7 @@ local function UpdateGossipFrame()
     end
 end
 
--- Hook the GossipTitleButton_OnClick to intercept save actions
+-- Hook the GossipTitleButton_OnClick to intercept save actions AND help SimpleActionSets
 local GNS_original_GossipTitleButton_OnClick = GossipTitleButton_OnClick
 function GNS_GossipTitleButton_OnClick()
     if this.type ~= "Available" and this.type ~= "Active" and GossipFrameNpcNameText and GossipFrameNpcNameText:GetText() == "Goblin Brainwashing Device" then
@@ -206,6 +206,26 @@ function GNS_GossipTitleButton_OnClick()
         if specNum then
             specNum = tonumber(specNum)
             lastSavedSpec = specNum
+        end
+        
+        -- Help SimpleActionSets by setting SAS_washer_choice if it failed to detect
+        -- SimpleActionSets loads after GNS, so its hook runs first and may fail to parse custom names
+        -- Check if SimpleActionSets is loaded by checking if the global function exists
+        if _G["SAS_GossipTitleButton_OnClick"] then
+            -- SimpleActionSets is loaded
+            -- Check if SAS_washer_choice is still nil (meaning SimpleActionSets failed to detect)
+            if not SAS_washer_choice or (type(SAS_washer_choice) == "table" and not SAS_washer_choice.save and not SAS_washer_choice.load) then
+                local originalText = this.GNS_OriginalText or buttonText
+                local _,_,save_spec = string.find(originalText, "Save (%d+).. Specialization")
+                local _,_,load_spec = string.find(originalText, "Activate (%d+).. Specialization")
+                if save_spec then
+                    SAS_washer_choice = { save = save_spec }
+                    DEFAULT_CHAT_FRAME:AddMessage("GNS: Helped SAS detect Save spec " .. save_spec, 0.3, 1.0, 0.3)
+                elseif load_spec then
+                    SAS_washer_choice = { load = load_spec }
+                    DEFAULT_CHAT_FRAME:AddMessage("GNS: Helped SAS detect Activate spec " .. load_spec, 0.3, 1.0, 0.3)
+                end
+            end
         end
     end
     
